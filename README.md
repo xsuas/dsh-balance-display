@@ -1,4 +1,4 @@
-# dsh-plugins
+# dsh-balance-display
 
 个人 DeepSeek Harness 插件集合。
 
