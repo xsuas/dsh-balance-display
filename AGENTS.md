@@ -1,52 +1,66 @@
 # Agent Instructions
 
-Style rules for working in this repository. Follow these for every change.
+## Commits
 
-## Commit messages
+- Use short plain-English titles.
+- Start with `Add`, `Update`, `Fix`, `Remove`, `Clean up`, or `Adjust`.
+- One logical change per commit.
+- Do not rewrite history for display purposes.
 
-- Plain English, short title: 15-35 characters, one topic per commit.
-- Start with a simple verb: `Add`, `Update`, `Fix`, `Remove`, `Clean up`, `Adjust`.
-- Examples: `Add balance display`, `Update tests`, `Fix balance response`, `Clean up balance plugin`.
-- No `feat:`/`fix:` prefixes, no parentheses, brackets, colons, arrows, or implementation details.
-- One commit per logical change; split independent changes.
-- Never rewrite history just for display purposes.
+Examples:
 
-## README and docs
+- `Add bundle support`
+- `Fix balance timeout`
+- `Update tests`
+- `Update README`
 
-- README describes usage only: install, uninstall, security, tests, license.
-- Do not document implementation details: slot names, ModuleLoader, UI layout history, or comparisons with official components.
-- Do not record development history or removed features.
+## Repository
 
-## Package descriptions
+This repository contains one DeepSeek Harness plugin:
 
-- Describe what the package does, not how it works.
-- No cache durations, route paths, or UI placement details.
+`@xsuas/dsh-balance-display`
 
-## Code comments
+Host entry:
 
-- Brief, English, explain why, not what.
-- No large header comment blocks.
-- Only current-state descriptions; never reference removed implementations.
+`lib/index.js`
+
+Browser entry:
+
+`lib/client.js`
+
+Bundle patch:
+
+`cordis.patch.yml`
+
+## Code
+
+- Keep comments short and in English.
+- Comments explain intent, not implementation history.
+- Do not reference removed components or previous layouts.
+- User-facing UI copy may remain Chinese.
+
+## README
+
+README documents only:
+
+- features
+- installation
+- uninstallation
+- security
+- tests
+- license
+
+Do not document internal slot or ModuleLoader details.
 
 ## Tests
 
-- Test names and messages in English, short, describe the current contract only.
-- Never assert or mention removed components or old behavior.
+- Test names are short English descriptions of current behavior.
+- Do not test removed components.
+- Run `npm test` before committing.
 
-## Language
+## UI
 
-- Repo-facing content (docs, tests, commits, comments) is English.
-- User-facing UI copy follows the product's own language.
-
-## Repository layout
-
-- One plugin per folder group under `plugins/`.
-- Host-only plugin: `plugins/<name>/` (package `@xsuas/dsh-<name>`).
-- Plugin with web UI: `plugins/<name>/` plus `plugins/client-<name>/` (package `@xsuas/dsh-client-<name>`).
-- Tests: `tests/<name>.test.mjs` per package.
-- Install: `dsh plugin --profile web add file:<path>` plus an insert row in `cordis.patch.yml`.
-
-## Known boundaries
-
-- Token usage is displayed by the official stats line; do not re-add it to this plugin.
-- The balance chip shows symbol + number; keep it simple, no menus.
+- Use DeepSeek Harness theme variables.
+- Do not hard-code text or border colors.
+- Keep the balance control simple.
+- Do not add token usage or popup menus.
