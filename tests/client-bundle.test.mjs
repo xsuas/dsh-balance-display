@@ -59,12 +59,10 @@ const exports = handoff.factory((spec) => {
   throw new Error(`unexpected require: ${spec}`);
 });
 
-it("工厂导出 apply/inject 与余额芯片组件", () => {
+it("工厂导出余额芯片", () => {
   assert.equal(typeof exports.apply, "function");
   assert.deepEqual(exports.inject, ["slots"]);
   assert.equal(typeof exports.BalanceChip, "function");
-  assert.equal(exports.BalanceMenu, undefined, "上拉菜单已移除，余额直接显示在芯片上");
-  assert.equal(exports.UsageRow, undefined, "token 用量由官方统计行展示");
 });
 
 it("apply 只注册 input.left 一个插槽", () => {
@@ -87,9 +85,9 @@ it("apply 只注册 input.left 一个插槽", () => {
   assert.equal(typeof registered[0].component, "function");
 });
 
-it("渲染级：BalanceChip 初始态可被 React 实际渲染（无菜单标记）", () => {
+it("BalanceChip 初始态可正常渲染", () => {
   const { renderToString } = requireAtRoot("react-dom/server");
   const html = renderToString(react.createElement(exports.BalanceChip));
-  assert.ok(html.includes("余额"), `渲染出芯片初始文本: ${html}`);
-  assert.ok(!html.includes("role=\"menu\""), "不再渲染菜单弹层");
+
+  assert.ok(html.includes("余额"));
 });

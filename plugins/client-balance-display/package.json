@@ -17,8 +17,7 @@
   "keywords": [
     "dsh-plugin",
     "deepseek",
-    "balance",
-    "tokens"
+    "balance"
   ],
   "dsh": {
     "client": {
