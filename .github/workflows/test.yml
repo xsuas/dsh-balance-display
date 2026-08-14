@@ -7,14 +7,31 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
-      # react/react-dom needed by client bundle tests; skipped when absent
-      - run: npm install --no-save react react-dom
-      - name: Host plugin tests
-        run: node tests/balance-display.test.mjs
-      - name: Client bundle tests
-        run: node tests/client-bundle.test.mjs
+          node-version: 22.19.0
+
+      - name: Install pnpm
+        run: npm install -g pnpm@10
+
+      - name: Install test dependencies
+        run: |
+          npm install --no-save \
+            react@18.2.0 \
+            react-dom@18.2.0 \
+            @deepseek-ai/dsh@0.1.0-rc.6
+
+      - name: Unit tests
+        run: npm test
+
+      - name: DSH bundle smoke test
+        env:
+          DSH_HOME: ${{ runner.temp }}/dsh-home
+        run: |
+          npx --no-install dsh plugin --profile smoke add .
+          npx --no-install dsh --profile smoke --dump-config > "$RUNNER_TEMP/dsh-config.txt"
+          grep -q "@xsuas/dsh-balance-display" "$RUNNER_TEMP/dsh-config.txt"
