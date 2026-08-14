@@ -89,5 +89,5 @@ it("renders balance chip", () => {
   const { renderToString } = requireAtRoot("react-dom/server");
   const html = renderToString(react.createElement(exports.BalanceChip));
 
-  assert.ok(html.includes("余额"));
+  assert.ok(html.includes('role="button"'));
 });
