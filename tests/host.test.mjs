@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { apply, name, inject } from "../plugins/balance-display/lib/index.js";
+import { apply, name, inject } from "../lib/index.js";
 
 function makeCtx({ resolve = async () => ({ value: "sk-test" }), fetchImpl } = {}) {
   let route;
@@ -79,6 +79,35 @@ test("upstream error returns 502", async () => {
   const r = await call(route().handler);
   assert.equal(r.status, 502);
   assert.equal(r.body.error.code, "upstream-http");
+});
+
+test("network failure returns 502", async () => {
+  const { route } = makeCtx({
+    fetchImpl: async () => {
+      throw new TypeError("fetch failed");
+    },
+  });
+  const r = await call(route().handler);
+  assert.equal(r.status, 502);
+  assert.equal(r.body.error.code, "upstream-network");
+});
+
+test("timeout returns 502", async () => {
+  const originalTimeout = AbortSignal.timeout;
+  AbortSignal.timeout = () =>
+    AbortSignal.abort(new DOMException("Timed out", "TimeoutError"));
+  try {
+    const { route } = makeCtx({
+      fetchImpl: async (_url, options) => {
+        throw options.signal.reason;
+      },
+    });
+    const r = await call(route().handler);
+    assert.equal(r.status, 502);
+    assert.equal(r.body.error.code, "upstream-timeout");
+  } finally {
+    AbortSignal.timeout = originalTimeout;
+  }
 });
 
 test("unavailable balance is valid", async () => {

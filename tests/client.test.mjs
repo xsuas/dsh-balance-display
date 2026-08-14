@@ -45,12 +45,12 @@ globalThis.window = {
   },
 };
 
-const code = readFileSync(new URL("../plugins/client-balance-display/lib/client.js", import.meta.url), "utf8");
+const code = readFileSync(new URL("../lib/client.js", import.meta.url), "utf8");
 new Function(code)();
 
 it("registers bundle factory", () => {
   assert.ok(handoff !== undefined, "module loader handoff was invoked");
-  assert.equal(handoff.id, "@xsuas/dsh-client-balance-display");
+  assert.equal(handoff.id, "@xsuas/dsh-balance-display");
 });
 
 const exports = handoff.factory((spec) => {
