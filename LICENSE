@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2026 dsh-plugins contributors
+Copyright (c) 2026 xsuas
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,13 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-### Third-party attribution
-
-DeepSeek Harness — https://github.com/deepseek-ai/deepseek-harness
-Copyright DeepSeek AI, MIT License. This repository builds plugins for
-DeepSeek Harness; the slot, module-loader, and projection interfaces it uses
-are designed by DeepSeek AI. The MIT license text of DeepSeek Harness applies
-to any portion derived from it.
