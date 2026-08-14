@@ -57,6 +57,14 @@ Do not document internal slot or ModuleLoader details.
 - Test names are short English descriptions of current behavior.
 - Do not test removed components.
 - Run `npm test` before committing.
+- Keep test dependencies in `devDependencies`.
+- Do not search global or cached npm directories for test dependencies.
+
+## CI
+
+- Use `npm ci`.
+- Test against the `web` profile.
+- Keep one config smoke test and one real boot smoke test.
 
 ## UI
 
