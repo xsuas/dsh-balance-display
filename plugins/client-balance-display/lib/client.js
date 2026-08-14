@@ -197,7 +197,8 @@ window.__ModuleLoader__.load({
         "span",
         {
           ref: rootRef,
-          style: { position: "relative", display: "inline-flex", flex: "none" },
+          // 工具行默认组间距 16px，负外边距拉近到 8px，与权限/计划按钮更紧凑
+          style: { position: "relative", display: "inline-flex", flex: "none", marginLeft: "-8px" },
           children: [
             jsxs(
               "span",
