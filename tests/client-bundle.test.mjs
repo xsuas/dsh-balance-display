@@ -67,7 +67,7 @@ it("工厂导出 apply/inject 与余额菜单组件", () => {
   assert.equal(exports.BalanceChip, undefined, "旧芯片组件已被 BalanceMenu 取代");
 });
 
-it("apply 只注册 input.right 一个插槽（余额 + 用量同住一个菜单）", () => {
+it("apply 只注册 input.left 一个插槽（余额 + 用量同住一个菜单，位于工具行左侧）", () => {
   const registered = [];
   const ctx = {
     slots: {
@@ -82,7 +82,7 @@ it("apply 只注册 input.right 一个插槽（余额 + 用量同住一个菜单
   };
   exports.apply(ctx);
   assert.equal(registered.length, 1);
-  assert.equal(registered[0].key, "conversation.input.right");
+  assert.equal(registered[0].key, "conversation.input.left");
   assert.equal(registered[0].options.id, "balance-display");
   assert.equal(typeof registered[0].component, "function");
 });

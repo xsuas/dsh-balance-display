@@ -5,8 +5,9 @@
  * window.__ModuleLoader__.load({ id, factory }) 注册懒加载工厂，工厂内仅使用
  * 壳注册的 seed 词（react / react/jsx-runtime），不引入任何包级运行时依赖。
  *
- * 功能：输入框工具行（conversation.input.right）内的"余额"芯片，点击弹出与
- * 官方模型菜单同款风格的菜单（同角落、向上弹出），内含两行：
+ * 功能：输入框工具行左侧（conversation.input.left，与权限/计划按钮一组）的
+ * "余额"芯片，点击弹出与官方模型菜单同款风格的菜单（向上弹出、向左锚定），
+ * 内含两行：
  *   1. 余额：DeepSeek API 账户余额（点击该行手动刷新，10 分钟自动重拉）；
  *   2. 会话 token 用量：读官方 tokenUsage 会话投影（↑输入 ↓输出）。
  *
@@ -68,11 +69,11 @@ window.__ModuleLoader__.load({
       gap: "4px",
     };
 
-    // 与官方模型菜单同款视觉（同角落、向上弹出）
+    // 与官方模型菜单同款视觉；位于工具行左侧时向左锚定、向右展开，避免溢出卡片
     const menuStyle = {
       position: "absolute",
       bottom: "calc(100% + 8px)",
-      right: "0",
+      left: "0",
       zIndex: 20,
       width: "min(240px, 100vw - 32px)",
       border: "1px solid var(--dsw-alias-border-inverted, #30363d)",
@@ -309,10 +310,10 @@ window.__ModuleLoader__.load({
     const inject = ["slots"];
 
     function apply(ctx) {
-      ctx.slots.inject("conversation.input.right", () =>
+      ctx.slots.inject("conversation.input.left", () =>
         ctx.slots.register(
           {
-            name: "conversation.input.right",
+            name: "conversation.input.left",
             id: "balance-display",
             order: 20,
           },
