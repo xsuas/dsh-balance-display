@@ -7,7 +7,7 @@
 | 文件夹 | 包名 | 作用 |
 |---|---|---|
 | `plugins/balance-display` | `@xsuas/dsh-balance-display` | 宿主插件：查询 DeepSeek API 账户余额（10 分钟缓存），提供同源只读路由 `/api/balance` |
-| `plugins/client-balance-display` | `@xsuas/dsh-client-balance-display` | 客户端插件：输入框内余额芯片（`conversation.input.right`）+ 卡片下方会话 token 用量行（`conversation.composer.dock`） |
+| `plugins/client-balance-display` | `@xsuas/dsh-client-balance-display` | 客户端插件：输入框内余额芯片（`conversation.input.right`，点击刷新、10 分钟自动重拉）。会话 token 用量由官方统计行原生展示，本插件不重复实现 |
 
 ## 安装（web profile）
 

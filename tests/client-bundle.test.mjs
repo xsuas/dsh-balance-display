@@ -59,14 +59,14 @@ const exports = handoff.factory((spec) => {
   throw new Error(`unexpected require: ${spec}`);
 });
 
-it("工厂导出 apply/inject 与两个组件", () => {
+it("工厂导出 apply/inject 与余额芯片组件", () => {
   assert.equal(typeof exports.apply, "function");
   assert.deepEqual(exports.inject, ["slots"]);
   assert.equal(typeof exports.BalanceChip, "function");
-  assert.equal(typeof exports.UsageRow, "function");
+  assert.equal(exports.UsageRow, undefined, "用量行已移除（官方统计行原生展示 token 用量）");
 });
 
-it("apply 注册两个官方插槽（正确的键与 id）", () => {
+it("apply 只注册 input.right 一个插槽（token 用量交给官方统计行）", () => {
   const registered = [];
   const ctx = {
     slots: {
@@ -80,45 +80,14 @@ it("apply 注册两个官方插槽（正确的键与 id）", () => {
     },
   };
   exports.apply(ctx);
-  assert.equal(registered.length, 2);
-  const chip = registered.find((r) => r.key === "conversation.input.right");
-  const usage = registered.find((r) => r.key === "conversation.composer.dock");
-  assert.ok(chip, "注册了 input.right");
-  assert.ok(usage, "注册了 composer.dock");
-  assert.equal(chip.options.id, "balance-display");
-  assert.equal(usage.options.id, "balance-display-usage");
-  assert.equal(typeof chip.component, "function");
-  assert.equal(typeof usage.component, "function");
+  assert.equal(registered.length, 1);
+  assert.equal(registered[0].key, "conversation.input.right");
+  assert.equal(registered[0].options.id, "balance-display");
+  assert.equal(typeof registered[0].component, "function");
 });
 
-it("UsageRow 无投影数据时渲染空、有数据时渲染文本", () => {
-  const noData = exports.UsageRow({ useProjection: () => undefined });
-  assert.equal(noData, null);
-
-  const node = exports.UsageRow({
-    useProjection: () => ({ uncachedInputTokens: 1500, outputTokens: 800, cacheReadTokens: 0, cacheWriteTokens: 0 }),
-  });
-  assert.equal(node.type, "span");
-  const text = node.props.title;
-  assert.ok(text.includes("输入 1.5k"), `title 含输入计数: ${text}`);
-  assert.ok(text.includes("输出 800"), `title 含输出计数: ${text}`);
-});
-
-it("UsageRow 全零时不渲染", () => {
-  const node = exports.UsageRow({
-    useProjection: () => ({ uncachedInputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0 }),
-  });
-  assert.equal(node, null);
-});
-
-it("渲染级：BalanceChip 初始态与 UsageRow 数据态可被 React 实际渲染", () => {
+it("渲染级：BalanceChip 初始态可被 React 实际渲染", () => {
   const { renderToString } = requireAtRoot("react-dom/server");
   const chipHtml = renderToString(react.createElement(exports.BalanceChip));
   assert.ok(chipHtml.includes("余额"), `chip 渲染出初始文本: ${chipHtml}`);
-
-  const usageHtml = renderToString(react.createElement(exports.UsageRow, {
-    useProjection: () => ({ uncachedInputTokens: 1500, outputTokens: 800, cacheReadTokens: 0, cacheWriteTokens: 0 }),
-  }));
-  assert.ok(usageHtml.includes("1.5k"), `usage 渲染出输入计数: ${usageHtml}`);
-  assert.ok(usageHtml.includes("800"), `usage 渲染出输出计数: ${usageHtml}`);
 });

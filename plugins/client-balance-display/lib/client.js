@@ -5,11 +5,11 @@
  * window.__ModuleLoader__.load({ id, factory }) 注册懒加载工厂，工厂内仅使用
  * 壳注册的 seed 词（react / react/jsx-runtime），不引入任何包级运行时依赖。
  *
- * 功能：
- * 1. 余额芯片 → 官方插槽 conversation.input.right（输入框工具行内、发送按钮前）：
- *    显示 DeepSeek API 账户余额，点击手动刷新，10 分钟自动重拉。
- * 2. 用量行 → 官方插槽 conversation.composer.dock（卡片下方统计行）：
- *    读官方 tokenUsage 会话投影，显示本会话累计输入/输出 token。
+ * 功能：余额芯片 → 官方插槽 conversation.input.right（输入框工具行内、模型
+ * 选择器旁）：显示 DeepSeek API 账户余额，点击手动刷新，10 分钟自动重拉。
+ *
+ * 会话 token 用量不在本插件内重复展示：官方统计行（conversation.composer.dock
+ * 的 StatsLine）已原生渲染 tokenUsage 投影（tokens ↑输入 ↓输出，位于该行末尾）。
  *
  * 隐私：仅请求同源 /api/balance 并缓存余额数值；不读取、不接触任何凭据。
  */
@@ -22,17 +22,11 @@ window.__ModuleLoader__.load({
     let react_jsx_runtime = require("react/jsx-runtime");
     let react = require("react");
 
-    const { jsx, jsxs } = react_jsx_runtime;
+    const { jsx } = react_jsx_runtime;
     const { useState, useEffect, useCallback } = react;
 
     const REFRESH_MS = 10 * 60 * 1000;
     const CURRENCY_SYMBOL = { CNY: "\u00a5", USD: "$", EUR: "\u20ac", GBP: "\u00a3" };
-
-    function compact(n) {
-      if (n < 1000) return String(n);
-      if (n < 1e6) return (n / 1e3).toFixed(1).replace(/\.0$/, "") + "k";
-      return (n / 1e6).toFixed(1).replace(/\.0$/, "") + "M";
-    }
 
     function clock(ts) {
       const d = new Date(ts);
@@ -46,19 +40,20 @@ window.__ModuleLoader__.load({
         .join("  ");
     }
 
-    const chipBase = {
+    // 与官方模型选择控件（28px 高 / 13px 字）保持同一行高与字号，避免观感错位
+    const chipStyle = {
       display: "inline-flex",
       alignItems: "center",
-      gap: "4px",
-      height: "20px",
-      padding: "0 6px",
-      borderRadius: "6px",
-      fontSize: "11px",
+      height: "28px",
+      padding: "0 8px",
+      borderRadius: "8px",
+      fontSize: "13px",
       lineHeight: "20px",
       whiteSpace: "nowrap",
       cursor: "pointer",
       userSelect: "none",
       border: "1px solid transparent",
+      flex: "none",
     };
 
     function BalanceChip() {
@@ -114,7 +109,7 @@ window.__ModuleLoader__.load({
         {
           title,
           style: {
-            ...chipBase,
+            ...chipStyle,
             color: state.phase === "error" ? "#8b93a1" : "#c9d1d9",
             opacity: state.phase === "stale" ? 0.55 : 1,
           },
@@ -126,38 +121,6 @@ window.__ModuleLoader__.load({
             event.currentTarget.style.borderColor = "transparent";
           },
           children: body,
-        },
-        undefined,
-      );
-    }
-
-    function UsageRow(props) {
-      const usage = props.useProjection("tokenUsage");
-      if (usage == null) return null;
-      const input = Number(usage.uncachedInputTokens ?? 0) + Number(usage.cacheReadTokens ?? 0) + Number(usage.cacheWriteTokens ?? 0);
-      const output = Number(usage.outputTokens ?? 0);
-      if (input === 0 && output === 0) return null;
-
-      const title = [
-        `输入 ${compact(input)}（未缓存 ${compact(Number(usage.uncachedInputTokens ?? 0))} + 缓存读 ${compact(Number(usage.cacheReadTokens ?? 0))} + 缓存写 ${compact(Number(usage.cacheWriteTokens ?? 0))}）`,
-        `输出 ${compact(output)}`,
-      ].join("\n");
-
-      return jsxs(
-        "span",
-        {
-          title,
-          style: {
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "8px",
-            fontSize: "11px",
-            color: "#8b93a1",
-            whiteSpace: "nowrap",
-          },
-          children: [
-            jsx("span", { children: `会话 token \u2191${compact(input)} \u2193${compact(output)}` }, undefined),
-          ],
         },
         undefined,
       );
@@ -176,20 +139,9 @@ window.__ModuleLoader__.load({
           BalanceChip,
         ),
       );
-      ctx.slots.inject("conversation.composer.dock", () =>
-        ctx.slots.register(
-          {
-            name: "conversation.composer.dock",
-            id: "balance-display-usage",
-            order: 20,
-          },
-          UsageRow,
-        ),
-      );
     }
 
     exports.BalanceChip = BalanceChip;
-    exports.UsageRow = UsageRow;
     exports.apply = apply;
     exports.inject = inject;
     return module.exports;
