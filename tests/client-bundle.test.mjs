@@ -4,7 +4,7 @@ import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { createRequire } from "node:module";
 import { join } from "node:path";
 
-// 在常见位置寻找已安装的 react（npx 缓存 / 全局 npm / 项目依赖），找不到则整组跳过。
+// Look for an installed react (npx cache / global npm / project deps); skip the whole group when absent.
 function findReactRoot() {
   const candidates = [];
   const localAppData = process.env.LOCALAPPDATA ?? join(process.env.USERPROFILE ?? "", "AppData", "Local");
@@ -24,7 +24,7 @@ function findReactRoot() {
       require.resolve("react-dom/server");
       return root;
     } catch {
-      // 尝试下一个候选
+      // try next candidate
     }
   }
   return undefined;
@@ -49,7 +49,7 @@ const code = readFileSync(new URL("../plugins/client-balance-display/lib/client.
 new Function(code)();
 
 it("registers bundle factory", () => {
-  assert.ok(handoff !== undefined, "window.__ModuleLoader__.load 被调用");
+  assert.ok(handoff !== undefined, "module loader handoff was invoked");
   assert.equal(handoff.id, "@xsuas/dsh-client-balance-display");
 });
 

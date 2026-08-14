@@ -13,7 +13,7 @@ function makeCtx({ resolve = async () => ({ value: "sk-test" }), fetchImpl } = {
       },
     },
     effect(fn) {
-      return fn(); // 立即执行注册，返回其 disposer
+      return fn(); // run registration immediately, return its disposer
     },
   };
   if (fetchImpl !== undefined) globalThis.fetch = fetchImpl;
@@ -46,12 +46,12 @@ function call(handler, { url = "/api/balance", origin, host = "127.0.0.1:3080" }
   return handler(req, res).then(() => ({ status: res.status, body: JSON.parse(res.body) }));
 }
 
-test("插件声明形状", () => {
+test("declares plugin contract", () => {
   assert.equal(name, "balance-display");
   assert.deepEqual(inject, ["credentials", "webServer"]);
 });
 
-test("成功路径返回余额且不含任何敏感字段", async () => {
+test("returns balance without secrets", async () => {
   const { route } = makeCtx({
     fetchImpl: async () => jsonRes({
       is_available: true,
@@ -63,25 +63,25 @@ test("成功路径返回余额且不含任何敏感字段", async () => {
   assert.equal(r.body.ok, true);
   assert.equal(r.body.balanceInfos[0].total_balance, "78.81");
   const text = JSON.stringify(r.body);
-  assert.ok(!text.includes("sk-test"), "响应体不得包含密钥");
-  assert.ok(!text.includes("Authorization"), "响应体不得包含请求头信息");
+  assert.ok(!text.includes("sk-test"), "response must not contain the key");
+  assert.ok(!text.includes("Authorization"), "response must not contain auth headers");
 });
 
-test("密钥缺失 → 502 no-credential", async () => {
+test("missing credential returns 502", async () => {
   const { route } = makeCtx({ resolve: async () => undefined });
   const r = await call(route().handler);
   assert.equal(r.status, 502);
   assert.equal(r.body.error.code, "no-credential");
 });
 
-test("上游 500 → 502 upstream-http", async () => {
+test("upstream error returns 502", async () => {
   const { route } = makeCtx({ fetchImpl: async () => jsonRes({}, { ok: false, status: 500 }) });
   const r = await call(route().handler);
   assert.equal(r.status, 502);
   assert.equal(r.body.error.code, "upstream-http");
 });
 
-test("余额不可用状态仍是合法响应", async () => {
+test("unavailable balance is valid", async () => {
   const { route } = makeCtx({
     fetchImpl: async () =>
       jsonRes({
@@ -100,7 +100,7 @@ test("余额不可用状态仍是合法响应", async () => {
   assert.equal(r.body.balanceInfos[0].total_balance, "0.00");
 });
 
-test("响应结构异常 → 502 bad-response", async () => {
+test("missing balance_infos returns 502", async () => {
   const { route } = makeCtx({
     fetchImpl: async () =>
       jsonRes({
@@ -112,7 +112,7 @@ test("响应结构异常 → 502 bad-response", async () => {
   assert.equal(r.body.error.code, "bad-response");
 });
 
-test("is_available 类型异常 → 502 bad-response", async () => {
+test("invalid is_available type returns 502", async () => {
   const { route } = makeCtx({
     fetchImpl: async () =>
       jsonRes({
@@ -125,7 +125,7 @@ test("is_available 类型异常 → 502 bad-response", async () => {
   assert.equal(r.body.error.code, "bad-response");
 });
 
-test("TTL 内命中缓存（fetch 只调一次）", async () => {
+test("caches within TTL", async () => {
   let calls = 0;
   const { route } = makeCtx({
     fetchImpl: async () => {
@@ -138,7 +138,7 @@ test("TTL 内命中缓存（fetch 只调一次）", async () => {
   assert.equal(calls, 1);
 });
 
-test("?force=1 绕过缓存（fetch 再次调用）", async () => {
+test("force bypasses cache", async () => {
   let calls = 0;
   const { route } = makeCtx({
     fetchImpl: async () => {
@@ -151,20 +151,20 @@ test("?force=1 绕过缓存（fetch 再次调用）", async () => {
   assert.equal(calls, 2);
 });
 
-test("外部 Origin → 403 forbidden-origin", async () => {
+test("rejects foreign origin", async () => {
   const { route } = makeCtx();
   const r = await call(route().handler, { origin: "https://evil.example" });
   assert.equal(r.status, 403);
   assert.equal(r.body.error.code, "forbidden-origin");
 });
 
-test("外部 Host → 403 forbidden-origin（DNS rebinding 防护）", async () => {
+test("rejects foreign host", async () => {
   const { route } = makeCtx();
   const r = await call(route().handler, { host: "attacker.example:3080" });
   assert.equal(r.status, 403);
 });
 
-test("回环 localhost Origin/Host 放行", async () => {
+test("allows loopback origin and host", async () => {
   const { route } = makeCtx({
     fetchImpl: async () => jsonRes({ is_available: true, balance_infos: [] }),
   });
