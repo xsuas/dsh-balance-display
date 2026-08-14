@@ -71,7 +71,8 @@ export function apply(ctx) {
     return inflight;
   }
 
-  ctx.webServer.register({
+  // 生命周期托管：fiber 被卸载/重载时由 ctx.effect 移除路由，避免重复注册
+  ctx.effect(() => ctx.webServer.register({
     kind: "exact",
     path: "/api/balance",
     handler: async (req, res) => {
@@ -116,5 +117,5 @@ export function apply(ctx) {
         }));
       }
     },
-  });
+  }), "balance-display: /api/balance route");
 }

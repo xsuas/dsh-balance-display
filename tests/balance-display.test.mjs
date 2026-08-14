@@ -12,6 +12,9 @@ function makeCtx({ resolve = async () => ({ value: "sk-test" }), fetchImpl } = {
         return () => {};
       },
     },
+    effect(fn) {
+      return fn(); // 立即执行注册，返回其 disposer
+    },
   };
   if (fetchImpl !== undefined) globalThis.fetch = fetchImpl;
   apply(ctx);
