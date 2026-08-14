@@ -1,36 +1,19 @@
 # dsh-balance-display
 
-个人 DeepSeek Harness 插件集合。
+DeepSeek Harness Web 余额显示插件。
 
-## balance-display
+## 功能
 
-为 DeepSeek Harness Web UI 增加：
-
-- DeepSeek API 账户余额显示
-- 手动刷新与 10 分钟缓存
-
-由两个插件组成：
-
-| 包 | 作用 |
-| --- | --- |
-| `@xsuas/dsh-balance-display` | 宿主端余额查询 |
-| `@xsuas/dsh-client-balance-display` | Web UI 余额显示 |
+- 显示 DeepSeek API 账户余额
+- 点击手动刷新
+- 10 分钟余额缓存
 
 ## 安装
 
+从 GitHub 安装：
+
 ```sh
-dsh plugin --profile web add file:<仓库路径>/plugins/balance-display
-dsh plugin --profile web add file:<仓库路径>/plugins/client-balance-display
-```
-
-在 `$DSH_HOME/profiles/web/cordis.patch.yml` 添加：
-
-```yaml
-- insert:
-    - id: balance-display
-      name: '@xsuas/dsh-balance-display'
-    - id: client-balance-display
-      name: '@xsuas/dsh-client-balance-display'
+dsh plugin --profile web add github:xsuas/dsh-balance-display
 ```
 
 重新启动：
@@ -39,24 +22,28 @@ dsh plugin --profile web add file:<仓库路径>/plugins/client-balance-display
 dsh web
 ```
 
-## 卸载
+本地开发：
 
-从 `cordis.patch.yml` 删除对应配置，然后执行：
+```sh
+dsh plugin --profile web add .
+```
+
+## 卸载
 
 ```sh
 dsh plugin --profile web remove @xsuas/dsh-balance-display
-dsh plugin --profile web remove @xsuas/dsh-client-balance-display
 ```
 
 ## 安全
 
 API Key 仅由宿主插件读取，不会返回给浏览器。
 
+余额接口仅接受 localhost / 127.0.0.1 请求。
+
 ## 测试
 
 ```sh
-node tests/balance-display.test.mjs
-node tests/client-bundle.test.mjs
+npm test
 ```
 
 ## License
