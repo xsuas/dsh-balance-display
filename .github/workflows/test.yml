@@ -14,16 +14,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22.19.0
+          cache: npm
 
       - name: Install pnpm
         run: npm install -g pnpm@10
 
-      - name: Install test dependencies
-        run: |
-          npm install --no-save \
-            react@18.2.0 \
-            react-dom@18.2.0 \
-            @deepseek-ai/dsh@0.1.0-rc.6
+      - name: Install dependencies
+        run: npm ci
 
       - name: Unit tests
         run: npm test
@@ -32,6 +29,33 @@ jobs:
         env:
           DSH_HOME: ${{ runner.temp }}/dsh-home
         run: |
-          npx --no-install dsh plugin --profile smoke add .
-          npx --no-install dsh --profile smoke --dump-config > "$RUNNER_TEMP/dsh-config.txt"
+          npx dsh plugin --profile web add .
+          npx dsh --profile web --dump-config > "$RUNNER_TEMP/dsh-config.txt"
           grep -q "@xsuas/dsh-balance-display" "$RUNNER_TEMP/dsh-config.txt"
+
+      - name: DSH web boot smoke test
+        env:
+          DSH_HOME: ${{ runner.temp }}/dsh-home
+        run: |
+          timeout 15s npx dsh web > "$RUNNER_TEMP/dsh-web.log" 2>&1 &
+          PID=$!
+
+          for i in {1..20}; do
+            if grep -q "127.0.0.1:3080" "$RUNNER_TEMP/dsh-web.log"; then
+              kill "$PID" || true
+              wait "$PID" || true
+              exit 0
+            fi
+
+            if ! kill -0 "$PID" 2>/dev/null; then
+              cat "$RUNNER_TEMP/dsh-web.log"
+              exit 1
+            fi
+
+            sleep 0.5
+          done
+
+          cat "$RUNNER_TEMP/dsh-web.log"
+          kill "$PID" || true
+          wait "$PID" || true
+          exit 1
