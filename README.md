@@ -12,7 +12,7 @@
 由两个插件组成：
 
 | 包 | 作用 |
-|---|---|
+| --- | --- |
 | `@xsuas/dsh-balance-display` | 宿主端余额查询 |
 | `@xsuas/dsh-client-balance-display` | Web UI 余额显示 |
 
