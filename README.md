@@ -43,6 +43,7 @@ API Key 仅由宿主插件读取，不会返回给浏览器。
 ## 测试
 
 ```sh
+npm ci
 npm test
 ```
 
