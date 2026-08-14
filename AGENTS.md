@@ -38,6 +38,14 @@ Style rules for working in this repository. Follow these for every change.
 - Repo-facing content (docs, tests, commits, comments) is English.
 - User-facing UI copy follows the product's own language.
 
+## Repository layout
+
+- One plugin per folder group under `plugins/`.
+- Host-only plugin: `plugins/<name>/` (package `@xsuas/dsh-<name>`).
+- Plugin with web UI: `plugins/<name>/` plus `plugins/client-<name>/` (package `@xsuas/dsh-client-<name>`).
+- Tests: `tests/<name>.test.mjs` per package.
+- Install: `dsh plugin --profile web add file:<path>` plus an insert row in `cordis.patch.yml`.
+
 ## Known boundaries
 
 - Token usage is displayed by the official stats line; do not re-add it to this plugin.
