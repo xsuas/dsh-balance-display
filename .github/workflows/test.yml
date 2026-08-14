@@ -12,9 +12,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      # 客户端 bundle 测试需要 react/react-dom，自动定位失败时会跳过
+      # react/react-dom needed by client bundle tests; skipped when absent
       - run: npm install --no-save react react-dom
-      - name: 宿主插件测试
+      - name: Host plugin tests
         run: node tests/balance-display.test.mjs
-      - name: 客户端 bundle 测试
+      - name: Client bundle tests
         run: node tests/client-bundle.test.mjs
