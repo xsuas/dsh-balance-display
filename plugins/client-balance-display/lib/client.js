@@ -6,10 +6,11 @@
  * 壳注册的 seed 词（react / react/jsx-runtime），不引入任何包级运行时依赖。
  *
  * 功能：输入框工具行左侧（conversation.input.left，与权限/计划按钮一组）的
- * "余额"芯片，点击弹出与官方模型菜单同款风格的菜单（向上弹出、向左锚定），
- * 内含两行：
- *   1. 余额：DeepSeek API 账户余额（点击该行手动刷新，10 分钟自动重拉）；
- *   2. 会话 token 用量：读官方 tokenUsage 会话投影（↑输入 ↓输出）。
+ * "余额"芯片，点击弹出与官方模型菜单同款风格的菜单（向上弹出、向左锚定）：
+ * 余额：DeepSeek API 账户余额（点击该行手动刷新，10 分钟自动重拉）。
+ *
+ * 会话 token 用量不在此展示：官方统计行（输入卡片下方）原生渲染 tokenUsage
+ * 投影（tokens ↑输入 ↓输出），避免重复。
  *
  * 隐私：仅请求同源 /api/balance 并缓存余额数值；不读取、不接触任何凭据。
  */
@@ -27,12 +28,6 @@ window.__ModuleLoader__.load({
 
     const REFRESH_MS = 10 * 60 * 1000;
     const CURRENCY_SYMBOL = { CNY: "\u00a5", USD: "$", EUR: "\u20ac", GBP: "\u00a3" };
-
-    function compact(n) {
-      if (n < 1000) return String(n);
-      if (n < 1e6) return (n / 1e3).toFixed(1).replace(/\.0$/, "") + "k";
-      return (n / 1e6).toFixed(1).replace(/\.0$/, "") + "M";
-    }
 
     function clock(ts) {
       const d = new Date(ts);
@@ -166,16 +161,7 @@ window.__ModuleLoader__.load({
         };
       }, [open, state.fetchedAt, refresh]);
 
-      const usage = props.useProjection("tokenUsage");
-      const inputTokens = usage == null ? null
-        : Number(usage.uncachedInputTokens ?? 0) + Number(usage.cacheReadTokens ?? 0) + Number(usage.cacheWriteTokens ?? 0);
-      const outputTokens = usage == null ? null : Number(usage.outputTokens ?? 0);
-      const usageText = usage == null ? "\u2014"
-        : `\u2191${compact(inputTokens)} \u2193${compact(outputTokens)}`;
-      const usageTitle = usage == null ? "本会话暂无 token 用量"
-        : `输入 ${compact(inputTokens)}（未缓存 ${compact(Number(usage.uncachedInputTokens ?? 0))} + 缓存读 ${compact(Number(usage.cacheReadTokens ?? 0))} + 缓存写 ${compact(Number(usage.cacheWriteTokens ?? 0))}）\n输出 ${compact(outputTokens)}`;
-
-      let chipTitle = "余额与用量";
+      let chipTitle = "余额";
       if (state.fetchedAt !== null) chipTitle += `\u00b7 更新于 ${clock(state.fetchedAt)}`;
       if (state.error !== null) chipTitle += `\n${state.error}`;
 
@@ -277,22 +263,6 @@ window.__ModuleLoader__.load({
                             color: state.phase === "error" ? "var(--dsw-alias-label-tertiary, #8b93a1)" : "inherit",
                           },
                           children: balanceRowText,
-                        }, undefined),
-                      ],
-                    },
-                    undefined,
-                  ),
-                  jsxs(
-                    "div",
-                    {
-                      role: "menuitem",
-                      title: usageTitle,
-                      style: rowStyle,
-                      children: [
-                        jsx("span", { style: { flex: "auto", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }, children: "token 用量" }, undefined),
-                        jsx("span", {
-                          style: { flex: "0 auto", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "var(--dsw-alias-label-tertiary, #8b93a1)" },
-                          children: usageText,
                         }, undefined),
                       ],
                     },
