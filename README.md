@@ -45,6 +45,15 @@ dsh plugin --profile web add file:<本仓库绝对路径>/plugins/client-balance
 
 客户端 bundle 为手写产物（无构建步骤），格式参考官方 `dsh-client-ui-goal` 发布物：`window.__ModuleLoader__.load({ id, factory(require) })`，工厂内只允许 `require("react")` / `require("react/jsx-runtime")` 这两个 seed 词。
 
+## 测试
+
+```sh
+node tests/balance-display.test.mjs   # 宿主插件（凭据解析、缓存、并发合并、回环防护）
+node tests/client-bundle.test.mjs     # 客户端 bundle（工厂/插槽注册/渲染级；自动定位 react，缺失则跳过）
+```
+
+CI：每次推送自动运行上述两个测试套件（`.github/workflows/test.yml`）。
+
 ## 许可
 
 MIT。本仓库为 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)（MIT）生态插件；插槽/加载器接口设计归 DeepSeek AI 所有。

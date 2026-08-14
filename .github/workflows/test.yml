@@ -1,0 +1,20 @@
+name: test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # 客户端 bundle 测试需要 react/react-dom，自动定位失败时会跳过
+      - run: npm install --no-save react react-dom
+      - name: 宿主插件测试
+        run: node tests/balance-display.test.mjs
+      - name: 客户端 bundle 测试
+        run: node tests/client-bundle.test.mjs
