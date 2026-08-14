@@ -1,8 +1,10 @@
 # dependencies
 node_modules/
 
-# logs and temp
+# logs
 *.log
+
+# temp
 .tmp_*
 
 # secrets

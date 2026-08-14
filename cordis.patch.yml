@@ -1,0 +1,3 @@
+- insert:
+    - id: balance-display
+      name: '@xsuas/dsh-balance-display'
