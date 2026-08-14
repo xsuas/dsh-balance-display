@@ -1,7 +1,7 @@
 {
   "name": "@xsuas/dsh-balance-display",
   "version": "0.1.0",
-  "description": "DSH 宿主插件：DeepSeek API 账户余额查询（10 分钟缓存）与同源只读路由 /api/balance",
+  "description": "DeepSeek Harness 宿主插件：查询 DeepSeek API 账户余额",
   "private": true,
   "type": "module",
   "exports": {

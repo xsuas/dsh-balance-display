@@ -81,8 +81,45 @@ test("上游 500 → 502 upstream-http", async () => {
   assert.equal(r.body.error.code, "upstream-http");
 });
 
-test("格式异常 → 502 bad-response", async () => {
-  const { route } = makeCtx({ fetchImpl: async () => jsonRes({ is_available: false }) });
+test("余额不可用状态仍是合法响应", async () => {
+  const { route } = makeCtx({
+    fetchImpl: async () =>
+      jsonRes({
+        is_available: false,
+        balance_infos: [{
+          currency: "CNY",
+          total_balance: "0.00",
+          granted_balance: "0.00",
+          topped_up_balance: "0.00",
+        }],
+      }),
+  });
+  const r = await call(route().handler);
+  assert.equal(r.status, 200);
+  assert.equal(r.body.ok, true);
+  assert.equal(r.body.balanceInfos[0].total_balance, "0.00");
+});
+
+test("响应结构异常 → 502 bad-response", async () => {
+  const { route } = makeCtx({
+    fetchImpl: async () =>
+      jsonRes({
+        is_available: true,
+      }),
+  });
+  const r = await call(route().handler);
+  assert.equal(r.status, 502);
+  assert.equal(r.body.error.code, "bad-response");
+});
+
+test("is_available 类型异常 → 502 bad-response", async () => {
+  const { route } = makeCtx({
+    fetchImpl: async () =>
+      jsonRes({
+        is_available: "true",
+        balance_infos: [],
+      }),
+  });
   const r = await call(route().handler);
   assert.equal(r.status, 502);
   assert.equal(r.body.error.code, "bad-response");

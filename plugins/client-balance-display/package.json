@@ -1,7 +1,7 @@
 {
   "name": "@xsuas/dsh-client-balance-display",
   "version": "0.1.0",
-  "description": "DSH 客户端插件：输入框内余额芯片（conversation.input.right）+ 卡片下方会话 token 用量行（conversation.composer.dock）",
+  "description": "DeepSeek Harness Web 插件：显示账户余额",
   "private": true,
   "type": "module",
   "exports": {

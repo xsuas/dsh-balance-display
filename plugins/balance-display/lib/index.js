@@ -1,14 +1,5 @@
 /**
- * @xsuas/dsh-balance-display — 宿主插件
- *
- * 提供 DeepSeek API 账户余额查询（10 分钟 TTL 缓存 + 并发合并）与同源只读
- * 路由 `/api/balance`。浏览器只拿到余额数值；API 密钥仅在本进程内解析使用，
- * 不落盘、不写日志、不进入任何响应体。
- *
- * 隐私与安全：
- * - 除 `api.deepseek.com` 外不发起任何网络请求，无遥测；
- * - 路由只接受回环 Origin/Host（防跨站请求与 DNS rebinding）；
- * - 错误信息不包含密钥、请求头回显或宿主路径。
+ * DeepSeek API 余额查询宿主插件。
  */
 export const name = "balance-display";
 export const inject = ["credentials", "webServer"];
@@ -27,7 +18,7 @@ export function apply(ctx) {
   let cache = undefined; // { balanceInfos, fetchedAt }
   let inflight = undefined;
 
-  /** 逐次解析密钥（凭据变更即时生效，绝不缓存密钥本身）。 */
+  // 每次请求重新解析凭据
   async function fetchFresh() {
     const resolved = await ctx.credentials.resolve(CREDENTIAL_REF);
     if (resolved === undefined || resolved.value === "") {
@@ -49,13 +40,16 @@ export function apply(ctx) {
     } catch {
       throw fail("bad-response", "余额接口返回非 JSON 内容");
     }
-    if (body?.is_available !== true || !Array.isArray(body.balance_infos)) {
+    if (
+      typeof body?.is_available !== "boolean" ||
+      !Array.isArray(body.balance_infos)
+    ) {
       throw fail("bad-response", "余额接口返回格式异常");
     }
     return body.balance_infos;
   }
 
-  /** TTL 缓存 + 在途请求合并；force 绕过缓存（失败时抛错，由调用方决定展示）。 */
+  // TTL 缓存 + 在途请求合并
   async function getBalance({ force = false } = {}) {
     if (!force && cache !== undefined && Date.now() - cache.fetchedAt < TTL_MS) return cache;
     if (inflight !== undefined) return inflight;
@@ -71,7 +65,7 @@ export function apply(ctx) {
     return inflight;
   }
 
-  // 生命周期托管：fiber 被卸载/重载时由 ctx.effect 移除路由，避免重复注册
+  // 插件卸载时自动移除路由
   ctx.effect(() => ctx.webServer.register({
     kind: "exact",
     path: "/api/balance",

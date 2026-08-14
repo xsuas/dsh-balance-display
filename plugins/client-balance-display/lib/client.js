@@ -1,17 +1,5 @@
 /**
- * @xsuas/dsh-client-balance-display — 浏览器面 bundle
- *
- * 手写产物（无构建步骤），格式与官方 dsh-client-ui-goal 的发布 bundle 一致：
- * window.__ModuleLoader__.load({ id, factory }) 注册懒加载工厂，工厂内仅使用
- * 壳注册的 seed 词（react / react/jsx-runtime），不引入任何包级运行时依赖。
- *
- * 功能：输入框工具行左侧（conversation.input.left，与权限/计划按钮一组）的
- * "余额"芯片，直接显示 DeepSeek API 账户余额；点击手动刷新，10 分钟自动重拉。
- *
- * 会话 token 用量不在此展示：官方统计行（输入卡片下方）原生渲染 tokenUsage
- * 投影（tokens ↑输入 ↓输出），避免重复。
- *
- * 隐私：仅请求同源 /api/balance 并缓存余额数值；不读取、不接触任何凭据。
+ * DeepSeek Harness Web 余额组件。
  */
 window.__ModuleLoader__.load({
   id: "@xsuas/dsh-client-balance-display",
@@ -46,7 +34,7 @@ window.__ModuleLoader__.load({
         .join("\n");
     }
 
-    // 与官方模型选择控件（28px 高 / 13px 字）保持同一行高与字号
+    // 工具栏按钮样式
     const chipStyle = {
       display: "inline-flex",
       alignItems: "center",
@@ -122,7 +110,6 @@ window.__ModuleLoader__.load({
             ...chipStyle,
             color: state.phase === "error" ? "#8b93a1" : "#c9d1d9",
             opacity: state.phase === "stale" ? 0.55 : 1,
-            // 工具行默认组间距 16px，负外边距拉近到 8px，与权限/计划按钮更紧凑
             marginLeft: "-8px",
           },
           onClick: () => void refresh(true),
