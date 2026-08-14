@@ -6,8 +6,7 @@
  * 壳注册的 seed 词（react / react/jsx-runtime），不引入任何包级运行时依赖。
  *
  * 功能：输入框工具行左侧（conversation.input.left，与权限/计划按钮一组）的
- * "余额"芯片，点击弹出与官方模型菜单同款风格的菜单（向上弹出、向左锚定）：
- * 余额：DeepSeek API 账户余额（点击该行手动刷新，10 分钟自动重拉）。
+ * "余额"芯片，直接显示 DeepSeek API 账户余额；点击手动刷新，10 分钟自动重拉。
  *
  * 会话 token 用量不在此展示：官方统计行（输入卡片下方）原生渲染 tokenUsage
  * 投影（tokens ↑输入 ↓输出），避免重复。
@@ -23,8 +22,8 @@ window.__ModuleLoader__.load({
     let react_jsx_runtime = require("react/jsx-runtime");
     let react = require("react");
 
-    const { jsx, jsxs } = react_jsx_runtime;
-    const { useState, useEffect, useCallback, useRef } = react;
+    const { jsx } = react_jsx_runtime;
+    const { useState, useEffect, useCallback } = react;
 
     const REFRESH_MS = 10 * 60 * 1000;
     const CURRENCY_SYMBOL = { CNY: "\u00a5", USD: "$", EUR: "\u20ac", GBP: "\u00a3" };
@@ -61,54 +60,15 @@ window.__ModuleLoader__.load({
       userSelect: "none",
       border: "1px solid transparent",
       flex: "none",
-      gap: "4px",
     };
 
-    // 与官方模型菜单同款视觉；位于工具行左侧时向左锚定、向右展开，避免溢出卡片
-    const menuStyle = {
-      position: "absolute",
-      bottom: "calc(100% + 8px)",
-      left: "0",
-      zIndex: 20,
-      width: "min(240px, 100vw - 32px)",
-      border: "1px solid var(--dsw-alias-border-inverted, #30363d)",
-      background: "var(--dsw-specific-menu, #161b22)",
-      boxShadow: "var(--dsw-shadow-lv3, 0 8px 24px #010409)",
-      color: "var(--dsw-alias-label-primary, #e6edf3)",
-      borderRadius: "12px",
-      flexDirection: "column",
-      padding: "4px",
-      display: "flex",
-      overflow: "hidden",
-    };
-
-    const rowStyle = {
-      width: "100%",
-      minHeight: "40px",
-      color: "inherit",
-      textAlign: "left",
-      cursor: "default",
-      background: "0 0",
-      border: "none",
-      borderRadius: "10px",
-      alignItems: "center",
-      gap: "8px",
-      padding: "0 10px",
-      fontSize: "14px",
-      lineHeight: "22px",
-      display: "flex",
-      outline: "none",
-    };
-
-    function BalanceMenu(props) {
-      const [open, setOpen] = useState(false);
+    function BalanceChip() {
       const [state, setState] = useState({
         phase: "loading", // loading | ready | stale | error
         balanceInfos: null,
         error: null,
         fetchedAt: null,
       });
-      const rootRef = useRef(null);
 
       const refresh = useCallback(async (force) => {
         try {
@@ -141,138 +101,44 @@ window.__ModuleLoader__.load({
         return () => clearInterval(timer);
       }, [refresh]);
 
-      // 打开菜单时若数据已过期则顺手刷新；点外部/Escape 关闭
-      useEffect(() => {
-        if (!open) return;
-        if (state.fetchedAt === null || Date.now() - state.fetchedAt >= REFRESH_MS) {
-          void refresh(false);
-        }
-        const onDocDown = (event) => {
-          if (rootRef.current && !rootRef.current.contains(event.target)) setOpen(false);
-        };
-        const onKey = (event) => {
-          if (event.key === "Escape") setOpen(false);
-        };
-        document.addEventListener("mousedown", onDocDown);
-        document.addEventListener("keydown", onKey);
-        return () => {
-          document.removeEventListener("mousedown", onDocDown);
-          document.removeEventListener("keydown", onKey);
-        };
-      }, [open, state.fetchedAt, refresh]);
-
-      let chipTitle = "余额";
-      if (state.fetchedAt !== null) chipTitle += `\u00b7 更新于 ${clock(state.fetchedAt)}`;
-      if (state.error !== null) chipTitle += `\n${state.error}`;
-
-      let chipBody;
-      if (state.phase === "loading") chipBody = "余额…";
-      else if (state.phase === "error") chipBody = "余额不可用";
-      else chipBody = balanceLabel(state.balanceInfos);
-
-      let balanceRowTitle = "点击刷新";
+      let title = "点击刷新余额";
       if (state.fetchedAt !== null) {
-        balanceRowTitle = `更新于 ${clock(state.fetchedAt)}\n${balanceDetail(state.balanceInfos)}`;
+        title = `更新于 ${clock(state.fetchedAt)}\n${balanceDetail(state.balanceInfos)}`;
       }
-      if (state.error !== null) balanceRowTitle += `\n${state.error}`;
+      if (state.error !== null) title += `\n${state.error}`;
 
-      const balanceRowText = state.phase === "error" ? "不可用"
-        : state.phase === "loading" ? "\u2026" : balanceLabel(state.balanceInfos);
+      let body;
+      if (state.phase === "loading") body = "余额…";
+      else if (state.phase === "error") body = "余额不可用";
+      else body = balanceLabel(state.balanceInfos);
 
       return jsx(
         "span",
         {
-          ref: rootRef,
-          // 工具行默认组间距 16px，负外边距拉近到 8px，与权限/计划按钮更紧凑
-          style: { position: "relative", display: "inline-flex", flex: "none", marginLeft: "-8px" },
-          children: [
-            jsxs(
-              "span",
-              {
-                role: "button",
-                tabIndex: 0,
-                "aria-haspopup": "menu",
-                "aria-expanded": open,
-                title: chipTitle,
-                style: {
-                  ...chipStyle,
-                  color: state.phase === "error" ? "#8b93a1" : "#c9d1d9",
-                  opacity: state.phase === "stale" ? 0.55 : 1,
-                },
-                onClick: () => setOpen((v) => !v),
-                onKeyDown: (event) => {
-                  if (event.key === "Enter" || event.key === " ") {
-                    event.preventDefault();
-                    setOpen((v) => !v);
-                  }
-                },
-                onMouseEnter: (event) => {
-                  event.currentTarget.style.borderColor = "#3d444d";
-                },
-                onMouseLeave: (event) => {
-                  event.currentTarget.style.borderColor = "transparent";
-                },
-                children: [
-                  chipBody,
-                  jsx(
-                    "span",
-                    {
-                      style: {
-                        display: "inline-block",
-                        transition: "transform .12s",
-                        transform: open ? "rotate(180deg)" : "none",
-                        color: "var(--dsw-alias-label-caption, #8b93a1)",
-                      },
-                      children: "\u25be",
-                    },
-                    undefined,
-                  ),
-                ],
-              },
-              undefined,
-            ),
-            open && jsx(
-              "div",
-              {
-                role: "menu",
-                style: menuStyle,
-                children: [
-                  jsxs(
-                    "button",
-                    {
-                      type: "button",
-                      role: "menuitem",
-                      title: balanceRowTitle,
-                      style: { ...rowStyle, cursor: "pointer" },
-                      onClick: () => void refresh(true),
-                      onMouseEnter: (event) => {
-                        event.currentTarget.style.background = "var(--dsw-alias-interactive-bg-hover, #1f242b)";
-                      },
-                      onMouseLeave: (event) => {
-                        event.currentTarget.style.background = "0 0";
-                      },
-                      children: [
-                        jsx("span", { style: { flex: "auto", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }, children: "余额" }, undefined),
-                        jsx("span", {
-                          style: {
-                            flex: "0 auto",
-                            minWidth: 0,
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                            color: state.phase === "error" ? "var(--dsw-alias-label-tertiary, #8b93a1)" : "inherit",
-                          },
-                          children: balanceRowText,
-                        }, undefined),
-                      ],
-                    },
-                    undefined,
-                  ),
-                ],
-              },
-              undefined,
-            ),
-          ],
+          role: "button",
+          tabIndex: 0,
+          title,
+          style: {
+            ...chipStyle,
+            color: state.phase === "error" ? "#8b93a1" : "#c9d1d9",
+            opacity: state.phase === "stale" ? 0.55 : 1,
+            // 工具行默认组间距 16px，负外边距拉近到 8px，与权限/计划按钮更紧凑
+            marginLeft: "-8px",
+          },
+          onClick: () => void refresh(true),
+          onKeyDown: (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              void refresh(true);
+            }
+          },
+          onMouseEnter: (event) => {
+            event.currentTarget.style.borderColor = "#3d444d";
+          },
+          onMouseLeave: (event) => {
+            event.currentTarget.style.borderColor = "transparent";
+          },
+          children: body,
         },
         undefined,
       );
@@ -288,12 +154,12 @@ window.__ModuleLoader__.load({
             id: "balance-display",
             order: 20,
           },
-          BalanceMenu,
+          BalanceChip,
         ),
       );
     }
 
-    exports.BalanceMenu = BalanceMenu;
+    exports.BalanceChip = BalanceChip;
     exports.apply = apply;
     exports.inject = inject;
     return module.exports;

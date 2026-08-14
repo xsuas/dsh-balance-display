@@ -59,15 +59,15 @@ const exports = handoff.factory((spec) => {
   throw new Error(`unexpected require: ${spec}`);
 });
 
-it("工厂导出 apply/inject 与余额菜单组件", () => {
+it("工厂导出 apply/inject 与余额芯片组件", () => {
   assert.equal(typeof exports.apply, "function");
   assert.deepEqual(exports.inject, ["slots"]);
-  assert.equal(typeof exports.BalanceMenu, "function");
-  assert.equal(exports.UsageRow, undefined, "旧独立用量行已移除");
-  assert.equal(exports.BalanceChip, undefined, "旧芯片组件已被 BalanceMenu 取代");
+  assert.equal(typeof exports.BalanceChip, "function");
+  assert.equal(exports.BalanceMenu, undefined, "上拉菜单已移除，余额直接显示在芯片上");
+  assert.equal(exports.UsageRow, undefined, "token 用量由官方统计行展示");
 });
 
-it("apply 只注册 input.left 一个插槽（余额 + 用量同住一个菜单，位于工具行左侧）", () => {
+it("apply 只注册 input.left 一个插槽", () => {
   const registered = [];
   const ctx = {
     slots: {
@@ -87,11 +87,9 @@ it("apply 只注册 input.left 一个插槽（余额 + 用量同住一个菜单�
   assert.equal(typeof registered[0].component, "function");
 });
 
-it("渲染级：BalanceMenu 初始态（菜单关闭）可被 React 实际渲染", () => {
+it("渲染级：BalanceChip 初始态可被 React 实际渲染（无菜单标记）", () => {
   const { renderToString } = requireAtRoot("react-dom/server");
-  const html = renderToString(react.createElement(exports.BalanceMenu, {
-    useProjection: () => undefined,
-  }));
+  const html = renderToString(react.createElement(exports.BalanceChip));
   assert.ok(html.includes("余额"), `渲染出芯片初始文本: ${html}`);
-  assert.ok(!html.includes("token 用量"), "菜单关闭时不渲染菜单内容");
+  assert.ok(!html.includes("role=\"menu\""), "不再渲染菜单弹层");
 });
