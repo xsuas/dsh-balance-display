@@ -48,7 +48,7 @@ globalThis.window = {
 const code = readFileSync(new URL("../plugins/client-balance-display/lib/client.js", import.meta.url), "utf8");
 new Function(code)();
 
-it("bundle 注册了正确 id 的工厂", () => {
+it("registers bundle factory", () => {
   assert.ok(handoff !== undefined, "window.__ModuleLoader__.load 被调用");
   assert.equal(handoff.id, "@xsuas/dsh-client-balance-display");
 });
@@ -59,13 +59,13 @@ const exports = handoff.factory((spec) => {
   throw new Error(`unexpected require: ${spec}`);
 });
 
-it("工厂导出余额芯片", () => {
+it("exports balance chip", () => {
   assert.equal(typeof exports.apply, "function");
   assert.deepEqual(exports.inject, ["slots"]);
   assert.equal(typeof exports.BalanceChip, "function");
 });
 
-it("apply 只注册 input.left 一个插槽", () => {
+it("registers balance chip", () => {
   const registered = [];
   const ctx = {
     slots: {
@@ -85,7 +85,7 @@ it("apply 只注册 input.left 一个插槽", () => {
   assert.equal(typeof registered[0].component, "function");
 });
 
-it("BalanceChip 初始态可正常渲染", () => {
+it("renders balance chip", () => {
   const { renderToString } = requireAtRoot("react-dom/server");
   const html = renderToString(react.createElement(exports.BalanceChip));
 
