@@ -21,6 +21,7 @@ function findReactRoot() {
       const require = createRequire(join(root, "noop.js"));
       require.resolve("react");
       require.resolve("react/jsx-runtime");
+      require.resolve("react-dom/server");
       return root;
     } catch {
       // 尝试下一个候选
@@ -108,4 +109,16 @@ it("UsageRow 全零时不渲染", () => {
     useProjection: () => ({ uncachedInputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0 }),
   });
   assert.equal(node, null);
+});
+
+it("渲染级：BalanceChip 初始态与 UsageRow 数据态可被 React 实际渲染", () => {
+  const { renderToString } = requireAtRoot("react-dom/server");
+  const chipHtml = renderToString(react.createElement(exports.BalanceChip));
+  assert.ok(chipHtml.includes("余额"), `chip 渲染出初始文本: ${chipHtml}`);
+
+  const usageHtml = renderToString(react.createElement(exports.UsageRow, {
+    useProjection: () => ({ uncachedInputTokens: 1500, outputTokens: 800, cacheReadTokens: 0, cacheWriteTokens: 0 }),
+  }));
+  assert.ok(usageHtml.includes("1.5k"), `usage 渲染出输入计数: ${usageHtml}`);
+  assert.ok(usageHtml.includes("800"), `usage 渲染出输出计数: ${usageHtml}`);
 });
