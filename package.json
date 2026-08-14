@@ -1,0 +1,7 @@
+{
+  "name": "dsh-plugins",
+  "version": "0.1.0",
+  "private": true,
+  "description": "个人 DeepSeek Harness 插件集合（一个插件一个文件夹）",
+  "license": "MIT"
+}

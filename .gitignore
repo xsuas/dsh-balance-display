@@ -1,0 +1,10 @@
+node_modules/
+*.log
+.tmp_*
+.env
+.env.*
+credentials*
+*.pem
+*.key
+*.pfx
+.DS_Store
